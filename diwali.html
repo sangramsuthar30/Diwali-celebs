@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Happy Diwali</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .greeting {
+      position: absolute;
+      top: 30%;
+      width: 100%;
+      text-align: center;
+      color: gold;
+      font-size: 4em;
+      font-weight: bold;
+      text-shadow: 0 0 20px orange, 0 0 40px red, 0 0 60px yellow;
+      animation: glow 2s ease-in-out infinite alternate;
+      z-index: 10;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px orange, 0 0 20px red, 0 0 30px yellow;
+      }
+      to {
+        text-shadow: 0 0 20px orange, 0 0 40px red, 0 0 60px yellow;
+      }
+    }
+
+    .music-control {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10;
+      background: rgba(0,0,0,0.5);
+      border: 2px solid gold;
+      color: gold;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    .music-control:hover {
+      background: rgba(255, 215, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="greeting">🎆 Happy Diwali 🎆</div>
+  <canvas id="fireworks"></canvas>
+
+  <!-- 🎵 Background Music -->
+  <audio id="bgMusic" autoplay loop>
+  <source src="jetu.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
+  <!-- 🎵 Music Control Button -->
+  <div class="music-control" onclick="toggleMusic()">🔈 Play Music</div>
+
+  <script>
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const fireworks = [];
+    const particles = [];
+
+    // Firework and particle classes (same as before)
+    class Firework {
+      constructor(x, y, targetY) {
+        this.x = x;
+        this.y = y;
+        this.targetY = targetY;
+        this.speed = 5;
+        this.angle = Math.PI / 2;
+        this.brightness = Math.random() * 50 + 50;
+        this.exploded = false;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      }
+
+      update() {
+        this.y -= this.speed;
+        if (this.y <= this.targetY && !this.exploded) {
+          this.explode();
+          this.exploded = true;
+        }
+      }
+
+      explode() {
+        for (let i = 0; i < 100; i++) {
+          particles.push(new Particle(this.x, this.y, this.color));
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.speed = Math.random() * 5 + 2;
+        this.angle = Math.random() * Math.PI * 2;
+        this.life = 100;
+        this.opacity = 1;
+        this.gravity = 0.05;
+      }
+
+      update() {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed + this.gravity;
+        this.life--;
+        this.opacity -= 0.01;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.opacity;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (Math.random() < 0.05) {
+        const x = Math.random() * canvas.width;
+        const y = canvas.height;
+        const targetY = Math.random() * canvas.height / 2;
+        fireworks.push(new Firework(x, y, targetY));
+      }
+
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        const f = fireworks[i];
+        f.update();
+        f.draw();
+        if (f.exploded) fireworks.splice(i, 1);
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw();
+        if (p.life <= 0 || p.opacity <= 0) particles.splice(i, 1);
+      }
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // 🔊 Music Toggle
+    const music = document.getElementById('bgMusic');
+    const controlBtn = document.querySelector('.music-control');
+    let isPlaying = false;
+
+    function toggleMusic() {
+      if (isPlaying) {
+        music.pause();
+        controlBtn.innerHTML = '🔈 Play Music';
+      } else {
+        music.play();
+        controlBtn.innerHTML = '🔇 Pause Music';
+      }
+      isPlaying = !isPlaying;
+    }
+
+    // Optional: Auto-start music after user interaction
+    window.addEventListener('click', () => {
+      if (!isPlaying) toggleMusic();
+    }, { once: true });
+  </script>
+</body>
+</html>
+
+
+
+
+
